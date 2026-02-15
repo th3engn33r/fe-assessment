@@ -243,12 +243,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     data.push("");
     data.push("Current Farm Statistics");
     if (this.stats) {
-      data.push("Total Animals", this.stats.totalAnimals);
-      data.push("Healthy Animals", this.stats.healthyAnimals);
-      data.push("Needs Attention", this.stats.sickAnimals);
-      data.push("Daily Milk Production (L)", this.stats.totalMilkProduction);
-      data.push("Average Weight (kg)", this.stats.averageWeight.toFixed(2));
-      data.push("Feed Efficiency", this.stats.feedEfficiency.toFixed(2));
+      data.push(`Total Animals, ${this.stats.totalAnimals}`);
+      data.push(`Healthy Animals, ${this.stats.healthyAnimals}`);
+      data.push(`Needs Attention, ${this.stats.sickAnimals}`);
+      data.push(`Daily Milk Production (L), ${this.stats.totalMilkProduction}`);
+      data.push(`Average Weight (kg), ${this.stats.averageWeight.toFixed(2)}`);
+      data.push(`Feed Efficiency, ${this.stats.feedEfficiency.toFixed(2)}`);
     } else {
       data.push("No statistics are available");
     }
@@ -295,18 +295,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
     } else {
       data.push("No animal data available");
     }
+    data.push(" ");
     data.push("End of the report");
     data.push("Developed by Shayan");
     return data.join('\r\n');
   }
 
   private sanitise(value: any): string {
-    if(value === undefined || value === null)
-      return ''
-    const str = String(value);
-    if(str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')){
-       return `"${str.replace(/"/g, '""')}"`;
-    }
-    return str
+    if (value === undefined || value === null)
+      return '';
+    return String(value)
+      .replace(/,/g, ';')
+      .replace(/"/g, '')
+      .replace(/\r?\n|\r/g, ' ');
   }
 }
