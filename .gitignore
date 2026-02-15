@@ -1,0 +1,43 @@
+# Candidate submission .gitignore
+
+# Dependencies
+node_modules/
+.npm
+
+# Build output
+dist/
+www/
+.angular/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test output
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+
+# ============================================
+# IMPORTANT: Keep evaluation folder separate
+# ============================================
+# The evaluation/ folder contains internal tests
+# and should NOT be sent to candidates.
+#
+# When preparing the assessment for candidates:
+# 1. Remove the evaluation/ folder
+# 2. Or use: git archive --exclude=evaluation/
+# ============================================

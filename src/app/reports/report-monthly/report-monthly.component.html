@@ -1,0 +1,93 @@
+<div class="report-container">
+  <header class="report-header">
+    <h1>{{ getReportTitle() }}</h1>
+    <div class="report-controls">
+      <div class="date-selector">
+        <label>Month:</label>
+        <select [(ngModel)]="selectedMonth" (change)="onPeriodChange()">
+          <option *ngFor="let month of months" [value]="month.value">{{ month.label }}</option>
+        </select>
+        <label>Year:</label>
+        <input type="number" [(ngModel)]="selectedYear" (change)="onPeriodChange()" min="2020" max="2030" />
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-secondary" (click)="printReport()">Print</button>
+        <button class="btn btn-primary" (click)="exportReport()">Export</button>
+      </div>
+    </div>
+  </header>
+
+  <div *ngIf="isLoading" class="loading">
+    <p>Loading report...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error">
+    <p>{{ errorMessage }}</p>
+    <button class="btn btn-secondary" (click)="loadReport()">Retry</button>
+  </div>
+
+  <div *ngIf="reportData && !isLoading" class="report-content">
+    <div class="report-info">
+      <p><strong>Period:</strong> {{ getPeriodLabel() }}</p>
+      <p><strong>Generated:</strong> {{ formatDate(reportData.generatedAt) }}</p>
+    </div>
+
+    <section class="stats-summary">
+      <h2>Summary Statistics</h2>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="value">{{ reportData.stats.totalAnimals }}</span>
+          <span class="label">Total Animals</span>
+        </div>
+        <div class="stat-item">
+          <span class="value">{{ reportData.stats.healthyAnimals }}</span>
+          <span class="label">Healthy</span>
+        </div>
+        <div class="stat-item">
+          <span class="value">{{ reportData.stats.sickAnimals }}</span>
+          <span class="label">Need Attention</span>
+        </div>
+        <div class="stat-item">
+          <span class="value">{{ reportData.stats.totalMilkProduction | number:'1.1-1' }} L</span>
+          <span class="label">Milk Production</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="animals-section">
+      <h2>Animals in Report Period</h2>
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Weight</th>
+            <th>Milk Production</th>
+            <th>Health Status</th>
+            <th>Last Checkup</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let animal of reportData.animals">
+            <td>{{ animal.name }}</td>
+            <td>{{ animal.type }}</td>
+            <td>{{ formatWeight(animal.weight) }}</td>
+            <td>{{ animal.milkProduction ? formatMilk(animal.milkProduction) : 'N/A' }}</td>
+            <td>
+              <span class="status-badge"
+                    [class.healthy]="animal.healthStatus === 'Healthy'"
+                    [class.sick]="animal.healthStatus === 'Sick'"
+                    [class.observation]="animal.healthStatus === 'Under Observation'">
+                {{ animal.healthStatus }}
+              </span>
+            </td>
+            <td>{{ formatDate(animal.lastCheckup) }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p *ngIf="reportData.animals.length === 0" class="no-data">
+        No animals with checkups in this period.
+      </p>
+    </section>
+  </div>
+</div>

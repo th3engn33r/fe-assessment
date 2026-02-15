@@ -1,0 +1,186 @@
+<div class="dashboard-container">
+  <header class="dashboard-header">
+    <h1>Farm Dashboard</h1>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="refreshData()">
+        Refresh
+      </button>
+      <button class="btn btn-primary" (click)="exportDashboard()">
+        Export Summary
+      </button>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Loading dashboard data...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage" class="error-banner">
+    <p>{{ errorMessage }}</p>
+    <button class="btn btn-secondary" (click)="refreshData()">Retry</button>
+  </div>
+
+  <!-- Stats Cards -->
+  <section class="stats-section" *ngIf="stats">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-value">{{ stats.totalAnimals }}</span>
+        <span class="stat-label">Total Animals</span>
+      </div>
+      <div class="stat-card healthy">
+        <span class="stat-value">{{ stats.healthyAnimals }}</span>
+        <span class="stat-label">Healthy</span>
+      </div>
+      <div class="stat-card warning">
+        <span class="stat-value">{{ stats.sickAnimals }}</span>
+        <span class="stat-label">Need Attention</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ stats.totalMilkProduction | number:'1.1-1' }} L</span>
+        <span class="stat-label">Daily Milk Production</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ stats.averageWeight | number:'1.0-0' }} kg</span>
+        <span class="stat-label">Average Weight</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ stats.feedEfficiency | number:'1.2-2' }}</span>
+        <span class="stat-label">Feed Efficiency</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Health Alerts -->
+  <section class="alerts-section" *ngIf="getHealthAlerts().length > 0">
+    <h2>Health Alerts</h2>
+    <div class="alerts-list">
+      <div *ngFor="let alert of getHealthAlerts()"
+           class="alert-card"
+           [class.high]="alert.severity === 'high'"
+           [class.medium]="alert.severity === 'medium'">
+        <span class="alert-icon">⚠</span>
+        <div class="alert-content">
+          <strong>{{ alert.name }}</strong>
+          <p>{{ alert.alert }}</p>
+        </div>
+        <span class="alert-status">{{ alert.status }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Animals List -->
+  <section class="animals-section">
+    <div class="section-header">
+      <h2>Animals</h2>
+      <div class="controls">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search animals..."
+          [(ngModel)]="searchFilter"
+          (input)="onSearchChange()"
+        />
+        <button class="btn btn-secondary" (click)="toggleView()">
+          {{ selectedView === 'grid' ? 'List View' : 'Grid View' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Grid View -->
+    <div *ngIf="selectedView === 'grid'" class="animals-grid">
+      <div *ngFor="let animal of filteredAnimals"
+           class="animal-card"
+           (click)="selectAnimal(animal)">
+        <div class="animal-header">
+          <h3>{{ animal.name }}</h3>
+          <span class="status-badge"
+                [class.healthy]="animal.healthStatus === 'Healthy'"
+                [class.sick]="animal.healthStatus === 'Sick'"
+                [class.observation]="animal.healthStatus === 'Under Observation'">
+            {{ animal.healthStatus }}
+          </span>
+        </div>
+        <div class="animal-details">
+          <p><strong>Type:</strong> {{ animal.type }}</p>
+          <p><strong>Weight:</strong> {{ formatWeight(animal.weight) }}</p>
+          <p *ngIf="animal.milkProduction"><strong>Milk:</strong> {{ formatMilk(animal.milkProduction) }}</p>
+          <p><strong>Last Checkup:</strong> {{ formatDate(animal.lastCheckup) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- List View -->
+    <div *ngIf="selectedView === 'list'" class="animals-table-container">
+      <table class="animals-table">
+        <thead>
+          <tr>
+            <th (click)="sortAnimals('name')" class="sortable">
+              Name {{ sortField === 'name' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
+            </th>
+            <th (click)="sortAnimals('type')" class="sortable">
+              Type {{ sortField === 'type' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
+            </th>
+            <th (click)="sortAnimals('weight')" class="sortable">
+              Weight {{ sortField === 'weight' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
+            </th>
+            <th (click)="sortAnimals('milkProduction')" class="sortable">
+              Milk Production {{ sortField === 'milkProduction' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
+            </th>
+            <th (click)="sortAnimals('healthStatus')" class="sortable">
+              Status {{ sortField === 'healthStatus' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
+            </th>
+            <th>Last Checkup</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let animal of filteredAnimals" (click)="selectAnimal(animal)">
+            <td>{{ animal.name }}</td>
+            <td>{{ animal.type }}</td>
+            <td>{{ formatWeight(animal.weight) }}</td>
+            <td>{{ animal.milkProduction ? formatMilk(animal.milkProduction) : 'N/A' }}</td>
+            <td>
+              <span class="status-badge"
+                    [class.healthy]="animal.healthStatus === 'Healthy'"
+                    [class.sick]="animal.healthStatus === 'Sick'"
+                    [class.observation]="animal.healthStatus === 'Under Observation'">
+                {{ animal.healthStatus }}
+              </span>
+            </td>
+            <td>{{ formatDate(animal.lastCheckup) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="btn btn-secondary" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+        Previous
+      </button>
+      <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+      <button class="btn btn-secondary" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+        Next
+      </button>
+    </div>
+  </section>
+
+  <!-- Reports Quick Access -->
+  <section class="reports-section">
+    <h2>Quick Reports</h2>
+    <div class="reports-grid">
+      <a routerLink="/reports/daily" class="report-link">Daily Report</a>
+      <a routerLink="/reports/weekly" class="report-link">Weekly Report</a>
+      <a routerLink="/reports/monthly" class="report-link">Monthly Report</a>
+      <a routerLink="/reports/quarterly" class="report-link">Quarterly Report</a>
+      <a routerLink="/reports/yearly" class="report-link">Yearly Report</a>
+      <a routerLink="/reports/custom" class="report-link">Custom Report</a>
+    </div>
+  </section>
+
+  <footer class="dashboard-footer" *ngIf="lastUpdated">
+    Last updated: {{ lastUpdated | date:'medium' }}
+  </footer>
+</div>
