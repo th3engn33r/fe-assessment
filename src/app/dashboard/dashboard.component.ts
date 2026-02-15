@@ -224,8 +224,89 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.dataService.formatMilkProduction(liters);
   }
 
-  // TODO: Implement export functionality
+ // TODO: Implement export functionality
   exportDashboard(): void {
-    console.log('Export not yet implemented');
+    const csvData = this.createCSV();
+    console.log(csvData)
+    const blob = new Blob([csvData], {type: 'text/csv;charset=utf-8;'})
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `farm-dashboard-export-${new Date().toISOString().slice(0,10)}.csv`
+    link.click();
+    URL.revokeObjectURL(url)
+  }
+
+  createCSV(): string {
+    const data: string[] = [];
+    // Current farm statistics
+    data.push("");
+    data.push("Current Farm Statistics");
+    if (this.stats) {
+      data.push("Total Animals", this.stats.totalAnimals);
+      data.push("Healthy Animals", this.stats.healthyAnimals);
+      data.push("Needs Attention", this.stats.sickAnimals);
+      data.push("Daily Milk Production (L)", this.stats.totalMilkProduction);
+      data.push("Average Weight (kg)", this.stats.averageWeight.toFixed(2));
+      data.push("Feed Efficiency", this.stats.feedEfficiency.toFixed(2));
+    } else {
+      data.push("No statistics are avaiable");
+    }
+    // Health alerts
+    data.push("");
+    data.push("Health Alerts");
+    const alerts = this.getHealthAlerts();
+    if (alerts.length > 0) {
+      data.push("Id,Name,Status,Alert,Severity");
+      alerts.forEach((alert) => {
+        data.push(
+          [
+            this.santitse(alert.id),
+            this.santitse(alert.name),
+            this.santitse(alert.status),
+            this.santitse(alert.alert),
+            this.santitse(alert.severity),
+          ].join(","),
+        );
+      });
+    } else {
+      data.push("No health alerts available");
+    }
+    // All animals in the current list
+    data.push("All animals in the current list");
+    if (this.animals.length > 0) {
+      data.push(
+        "Id,Name,Type,Birth Date,Weight (kg),Health Status,Last Checkup,Milk Production (L),Feed Consumption,Notes",
+      );
+      this.animals.forEach((animal) => {
+        data.push([          
+          this.santitse(animal.id),
+          this.santitse(animal.name),
+          this.santitse(animal.type),
+          this.santitse(animal.birthDate),
+          this.santitse(animal.weight),
+          this.santitse(animal.healthStatus),
+          this.santitse(animal.lastCheckup),
+          this.santitse(animal.milkProduction),
+          this.santitse(animal.feedConsumption),
+          this.santitse(animal.notes),
+        ].join(','));
+      });
+    } else {
+      data.push("No animal data available");
+    }
+    data.push("End of the report");
+    data.push("Developed by Shayan");
+    return data.toString();
+  }
+
+  santitse(value:any) :string {
+    if(value === undefined || value === null)
+      return ''
+    const str = String(value);
+    if(str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')){
+       return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str
   }
 }
