@@ -250,7 +250,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       data.push("Average Weight (kg)", this.stats.averageWeight.toFixed(2));
       data.push("Feed Efficiency", this.stats.feedEfficiency.toFixed(2));
     } else {
-      data.push("No statistics are avaiable");
+      data.push("No statistics are available");
     }
     // Health alerts
     data.push("");
@@ -261,11 +261,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
       alerts.forEach((alert) => {
         data.push(
           [
-            this.santitse(alert.id),
-            this.santitse(alert.name),
-            this.santitse(alert.status),
-            this.santitse(alert.alert),
-            this.santitse(alert.severity),
+            this.sanitise(alert.id),
+            this.sanitise(alert.name),
+            this.sanitise(alert.status),
+            this.sanitise(alert.alert),
+            this.sanitise(alert.severity),
           ].join(","),
         );
       });
@@ -280,16 +280,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
       );
       this.animals.forEach((animal) => {
         data.push([          
-          this.santitse(animal.id),
-          this.santitse(animal.name),
-          this.santitse(animal.type),
-          this.santitse(animal.birthDate),
-          this.santitse(animal.weight),
-          this.santitse(animal.healthStatus),
-          this.santitse(animal.lastCheckup),
-          this.santitse(animal.milkProduction),
-          this.santitse(animal.feedConsumption),
-          this.santitse(animal.notes),
+          this.sanitise(animal.id),
+          this.sanitise(animal.name),
+          this.sanitise(animal.type),
+          this.sanitise(animal.birthDate),
+          this.sanitise(animal.weight),
+          this.sanitise(animal.healthStatus),
+          this.sanitise(animal.lastCheckup),
+          this.sanitise(animal.milkProduction),
+          this.sanitise(animal.feedConsumption),
+          this.sanitise(animal.notes),
         ].join(','));
       });
     } else {
@@ -297,10 +297,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
     data.push("End of the report");
     data.push("Developed by Shayan");
-    return data.toString();
+    return data.join('\r\n');
   }
 
-  santitse(value:any) :string {
+  private sanitise(value: any): string {
     if(value === undefined || value === null)
       return ''
     const str = String(value);
