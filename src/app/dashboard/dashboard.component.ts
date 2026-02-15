@@ -13,9 +13,9 @@ import { DataService, Animal, FarmStats, DashboardWidget } from '../core/service
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  animals: any[] = [];
-  stats: any = null;
-  widgets: any[] = [];
+  animals: Animal[] = [];
+  stats: FarmStats | null = null;
+  widgets: DashboardWidget[] = [];
   recentAlerts: any[] = [];
 
   private subscriptions: Subscription[] = [];

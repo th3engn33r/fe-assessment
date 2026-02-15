@@ -25,8 +25,10 @@ export interface FarmStats {
   feedEfficiency: number;
 }
 
+export type ReportPeriod = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly' | 'custom';
+
 export interface ReportData {
-  period: string;
+  period: ReportPeriod;
   startDate: string;
   endDate: string;
   animals: Animal[];
@@ -38,9 +40,25 @@ export interface DashboardWidget {
   id: string;
   type: string;
   title: string;
-  data: any;
+  data: FarmStats | HealthAlert[] | MilkProductionData | null;
   position: { x: number; y: number };
   size: { width: number; height: number };
+}
+
+export type HealthStatus = 'Healthy' | 'Sick' | 'Under Observation';
+
+export interface HealthAlert {
+  id: number;
+  name: string;
+  status: string;
+  alert: string;
+  severity: 'high' | 'medium' | 'low';
+}
+
+export interface MilkProductionData {
+  labels: string[];
+  values: number[];
+  total: number;
 }
 
 @Injectable({
