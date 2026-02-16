@@ -20,18 +20,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
   private animalsSubscription: Subscription | null = null;
+  private widgetSubscription: Subscription | null = null;
   private statsSubscription: Subscription | null = null;
 
-  isLoading = false;
-  errorMessage = '';
-  searchFilter = '';
+  isLoading:boolean = false;
+  errorMessage:string = '';
+  searchFilter:string = '';
   selectedView: 'grid' | 'list' = 'grid';
   lastUpdated: Date | null = null;
 
-  sortField = 'name';
+  sortField:string = 'name';
   sortDirection: 'asc' | 'desc' = 'asc';
-  currentPage = 1;
-  pageSize = 5;
+  currentPage:number = 1;
+  pageSize:number = 5;
 
   constructor(private dataService: DataService) {}
 
@@ -44,38 +45,45 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.animalsSubscription) {
       this.animalsSubscription.unsubscribe();
     }
+    if (this.widgetSubscription) {
+      this.widgetSubscription.unsubscribe();
+    }
+    if (this.statsSubscription) {
+      this.statsSubscription.unsubscribe();
+    }
   }
 
   loadDashboardData(): void {
     this.isLoading = true;
     this.errorMessage = '';
-
+    
+    this.widgetSubscription = this.dataService.getDashboardWidgets().subscribe({
+      next: (widgets) => {
+        this.widgets = widgets;
+        this.processWidgetData();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error loading widgets:', err);
+        this.isLoading = false;
+      }
+    });
+    
+    this.statsSubscription = this.dataService.getStats().subscribe({
+      next: (stats) => {
+        this.stats = stats;
+        
+      },
+      error: (err) => {
+        this.errorMessage = 'Failed to load statistics';
+        this.isLoading = false;
+      }
+    });
+    
     this.animalsSubscription = this.dataService.getAnimals().subscribe({
       next: (animals) => {
         this.animals = animals;
         this.lastUpdated = new Date();
-
-        this.statsSubscription = this.dataService.getStats().subscribe({
-          next: (stats) => {
-            this.stats = stats;
-
-            this.dataService.getDashboardWidgets().subscribe({
-              next: (widgets) => {
-                this.widgets = widgets;
-                this.processWidgetData();
-                this.isLoading = false;
-              },
-              error: (err) => {
-                console.error('Error loading widgets:', err);
-                this.isLoading = false;
-              }
-            });
-          },
-          error: (err) => {
-            this.errorMessage = 'Failed to load statistics';
-            this.isLoading = false;
-          }
-        });
       },
       error: (err) => {
         this.errorMessage = 'Failed to load animals';
